@@ -1,55 +1,167 @@
-// small UI helpers: menu toggle, gallery lightbox, video modal, year
-document.getElementById('year').textContent = new Date().getFullYear();
+// Basic editor behaviors: add image, add text, drag & resize, export, save/load with Firestore (if configured)
+(() => {
+  const editor = document.getElementById('editor');
+  const openEditorBtn = document.getElementById('open-editor-btn');
+  const closeEditorBtn = document.getElementById('close-editor');
+  const canvas = document.getElementById('canvas-area');
+  const uploadImage = document.getElementById('upload-image');
+  const addTextBtn = document.getElementById('add-text');
+  const exportBtn = document.getElementById('export-img');
+  const saveBtn = document.getElementById('save-project');
+  const loadBtn = document.getElementById('load-projects');
+  const projectsList = document.getElementById('projects-list');
+  const selectedInfo = document.getElementById('selected-info');
+  let selected = null;
 
-const menuBtn = document.getElementById('menuBtn');
-const nav = document.getElementById('nav');
-menuBtn.addEventListener('click', ()=> nav.classList.toggle('show'));
+  function openEditor(){ editor.hidden = false; editor.setAttribute('aria-hidden','false'); }
+  function closeEditor(){ editor.hidden = true; editor.setAttribute('aria-hidden','true'); }
+  openEditorBtn?.addEventListener('click', openEditor);
+  document.getElementById('editor-open')?.addEventListener('click',openEditor);
+  closeEditorBtn?.addEventListener('click', closeEditor);
 
-// Modal elements
-const modal = document.getElementById('mediaModal');
-const modalImage = document.getElementById('modalImage');
-const modalVideo = document.getElementById('modalVideo');
-const modalClose = document.getElementById('modalClose');
-
-function openImage(src, alt='') {
-  modalImage.style.display='block';
-  modalVideo.style.display='none';
-  modalImage.src = src;
-  modalImage.alt = alt;
-  modal.setAttribute('aria-hidden','false');
-}
-function openVideo(src) {
-  modalVideo.style.display='block';
-  modalImage.style.display='none';
-  modalVideo.src = src;
-  modal.setAttribute('aria-hidden','false');
-}
-function closeModal(){
-  modal.setAttribute('aria-hidden','true');
-  modalVideo.pause();
-  modalVideo.src = '';
-  modalImage.src='';
-}
-modalClose.addEventListener('click', closeModal);
-modal.addEventListener('click', (e)=> { if(e.target === modal) closeModal(); });
-
-// photo thumbnails
-document.querySelectorAll('.thumb').forEach(img=>{
-  img.addEventListener('click', ()=> openImage(img.dataset.full || img.src, img.alt));
-});
-
-// video cards
-document.querySelectorAll('.video-card').forEach(card=>{
-  card.addEventListener('click', ()=> {
-    const src = card.dataset.video;
-    if(src) openVideo(src);
+  // image upload
+  uploadImage.addEventListener('change', (e) => {
+    const file = e.target.files[0]; if(!file) return;
+    const url = URL.createObjectURL(file);
+    addImageToCanvas(url);
+    uploadImage.value = '';
   });
-});
 
-// make links with hash scroll smoothly
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click', e=>{
-    const target = document.querySelector(a.getAttribute('href'));
-    if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}); nav.classList.remove('show'); }
+  function addImageToCanvas(src){
+    const el = document.createElement('div');
+    el.className = 'canvas-item';
+    el.style.left = '20px'; el.style.top = '20px'; el.style.width = '220px';
+    el.innerHTML = `<img src="${src}" alt="">`;
+    makeInteractive(el);
+    canvas.appendChild(el);
+    selectElement(el);
+  }
+
+  function addTextToCanvas(){
+    const el = document.createElement('div');
+    el.className = 'canvas-item';
+    el.style.left = '60px'; el.style.top = '40px';
+    el.innerHTML = `<div class="canvas-text" contenteditable="true">Edit text</div>`;
+    makeInteractive(el);
+    canvas.appendChild(el);
+    selectElement(el);
+  }
+
+  addTextBtn.addEventListener('click', addTextToCanvas);
+
+  // draggable simple handler (pointer events)
+  function makeInteractive(el){
+    el.addEventListener('pointerdown', (ev) => {
+      selectElement(el);
+      el.setPointerCapture(ev.pointerId);
+      const start = {x:ev.clientX, y:ev.clientY, left: parseFloat(el.style.left)||0, top: parseFloat(el.style.top)||0};
+      function move(e){
+        el.style.left = (start.left + e.clientX - start.x) + 'px';
+        el.style.top  = (start.top  + e.clientY - start.y) + 'px';
+      }
+      function up(e){
+        el.releasePointerCapture(ev.pointerId);
+        window.removeEventListener('pointermove',move);
+        window.removeEventListener('pointerup',up);
+      }
+      window.addEventListener('pointermove',move);
+      window.addEventListener('pointerup',up);
+    });
+
+    // double click to remove
+    el.addEventListener('dblclick', ()=> {
+      if(confirm('Remove element?')) el.remove();
+    });
+
+    // basic resize via wheel (ctrl+wheel)
+    el.addEventListener('wheel', (e) => {
+      if(!e.ctrlKey) return;
+      e.preventDefault();
+      const currentW = parseFloat(el.style.width)||el.offsetWidth;
+      const newW = Math.max(40, currentW + (e.deltaY*-0.2));
+      el.style.width = newW + 'px';
+    });
+  }
+
+  function selectElement(el){
+    selected = el;
+    document.querySelectorAll('.canvas-item').forEach(i=>i.style.outline='none');
+    if(el) el.style.outline = '2px solid rgba(21,94,240,0.2)';
+    selectedInfo.innerText = el ? el.innerText.slice(0,120) : 'No selection';
+  }
+
+  canvas.addEventListener('click', (e) => {
+    if(e.target === canvas) { selectElement(null); }
   });
-});
+
+  // export to PNG using html2canvas
+  exportBtn.addEventListener('click', async () => {
+    // temporarily remove outlines
+    document.querySelectorAll('.canvas-item').forEach(i => i.style.outline='none');
+    const root = canvas;
+    const scale = 2;
+    const opts = { scale, useCORS:true, backgroundColor:null, width:root.scrollWidth, height:root.scrollHeight };
+    const canvasImg = await html2canvas(root, opts);
+    const url = canvasImg.toDataURL('image/png');
+    const a = document.createElement('a'); a.href = url; a.download = 'jagtap-design.png'; a.click();
+  });
+
+  // Save / Load via Firestore (if configured)
+  function dbAvailable(){ return typeof firebase !== 'undefined' && firebase && firebase.firestore; }
+  saveBtn.addEventListener('click', async () => {
+    if(!dbAvailable()){ alert('Firebase not configured. Paste your firebaseConfig in index.html to enable save/load.'); return; }
+    const db = firebase.firestore();
+    const state = serializeProject();
+    const name = prompt('Project name', 'Untitled design');
+    if(!name) return;
+    const doc = { name, state, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+    await db.collection('projects').add(doc);
+    alert('Saved to Firestore');
+  });
+
+  loadBtn.addEventListener('click', async () => {
+    if(!dbAvailable()){ alert('Firebase not configured. Paste your firebaseConfig in index.html to enable save/load.'); return; }
+    const db = firebase.firestore();
+    const snapshot = await db.collection('projects').orderBy('createdAt','desc').limit(20).get();
+    projectsList.innerHTML = '';
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const btn = document.createElement('button');
+      btn.textContent = `${d.name} — ${d.createdAt ? new Date(d.createdAt.seconds*1000).toLocaleString() : ''}`;
+      btn.addEventListener('click', ()=> loadProject(d.state));
+      projectsList.appendChild(btn);
+    });
+  });
+
+  function serializeProject(){
+    const items = [];
+    document.querySelectorAll('.canvas-item').forEach(el => {
+      const rect = { left: el.style.left||'0px', top: el.style.top||'0px', width: el.style.width||'', html: el.innerHTML };
+      items.push(rect);
+    });
+    return { items, size: { w: canvas.clientWidth, h: canvas.clientHeight } };
+  }
+
+  function loadProject(state){
+    canvas.innerHTML = '';
+    state.items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'canvas-item';
+      el.style.left = it.left; el.style.top = it.top;
+      if(it.width) el.style.width = it.width;
+      el.innerHTML = it.html;
+      makeInteractive(el);
+      canvas.appendChild(el);
+    });
+    alert('Project loaded');
+  }
+
+  // small tune: open editor from header
+  document.querySelectorAll('a[href="#editor"], #open-editor-btn').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); openEditor(); }));
+
+  // Admin demo prevents page from navigating
+  document.getElementById('admin-form')?.addEventListener('submit', (e) => { e.preventDefault(); alert('Admin demo: not a real login.'); });
+
+  // small sample seed item
+  // addImageToCanvas('https://picsum.photos/seed/demo/800/600');
+})();
