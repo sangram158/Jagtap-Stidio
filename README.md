@@ -1,15 +1,21 @@
-# Mudhoji Studio — Portfolio site
+# Jagtap-Stidio
 
-A simple, responsive single-page website for a professional photographer & video editor.
+Demo portfolio + lightweight Canva-style editor.
 
-## How to use
-1. Replace `assets/*` with your real photos and video files.
-2. Edit contact email/tel in `index.html`.
-3. Push to GitHub and enable GitHub Pages (see below).
+## What this repo contains
+- `index.html` — landing page + editor
+- `styles.css` — site styles
+- `script.js` — editor logic (add image, text, drag, export)
+- `firebase.json` — hosting config
+- GitHub Actions workflow for deploying to Firebase (see `.github/workflows`)
 
-## Deploy to GitHub Pages
-- Put these files in repository root (or `docs/`) and in GitHub repo Settings → Pages set source to `main` branch → `/ (root)` or `/docs`.
-- Or create a branch `gh-pages` and push site files there.
+## Setup (quick)
+1. Paste your Firebase config in `index.html` (the firebaseConfig object near top).
+2. Enable **Firestore** and **Hosting** in Firebase console.
+3. Create a Firebase Service Account JSON and add it to GitHub Secrets as `FIREBASE_SERVICE_ACCOUNT` (for CI deploy) — see the workflow file.
+4. Push files — GitHub Actions will run and deploy to Firebase Hosting.
 
-## Optional: Netlify Forms
-Replace contact anchor with a `<form name="contact">` and enable Netlify to store submissions.
+## Notes & next steps
+- This is a starting point. If you want:
+  - templates, layers, image cropping, or better text tools — we can add modules.
+  - offline export improvements — we can add server-side rendering or more robust canvas drawing.
