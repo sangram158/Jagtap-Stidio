@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mudhoji Studio — Photography & Video</title>
+  <meta name="description" content="Professional photography & video editing services — portraits, events, commercial, motion reels." />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#">Mudhoji Studio</a>
+      <nav class="nav" id="nav">
+        <a href="#services">Services</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <button id="menuBtn" class="menu-btn" aria-label="menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="home">
+      <div class="hero-inner container">
+        <div class="hero-media">
+          <!-- Replace with your short mp4 (or keep poster image) -->
+          <video class="hero-video" autoplay muted loop playsinline poster="assets/hero-poster.jpg">
+            <source src="assets/hero-loop.mp4" type="video/mp4" />
+            <!-- fallback image -->
+            <img src="assets/hero-poster.jpg" alt="Mudhoji Studio">
+          </video>
+        </div>
+        <div class="hero-copy">
+          <h1>Mudhoji Studio</h1>
+          <p>Professional photography & cinematic video editing — portraits, events, and commercial reels.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#portfolio">View Portfolio</a>
+            <a class="btn outline" href="mailto:your@email.com?subject=Booking%20Inquiry">Book a Session</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="section">
+      <div class="container">
+        <h2>Services</h2>
+        <div class="grid services-grid">
+          <div class="card">
+            <h3>Photography</h3>
+            <p>Portraits, weddings, product shots — full shoot & retouching.</p>
+          </div>
+          <div class="card">
+            <h3>Video Editing</h3>
+            <p>Short films, social reels, event edits, color grading and motion graphics.</p>
+          </div>
+          <div class="card">
+            <h3>Commercial / Brand</h3>
+            <p>Ads, brand videos, and content for Instagram / YouTube / TikTok.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio" class="section">
+      <div class="container">
+        <h2>Portfolio</h2>
+
+        <h3>Photography</h3>
+        <div class="grid gallery-grid" id="photoGrid">
+          <!-- Replace src with your images -->
+          <img class="thumb" src="assets/photo1.jpg" alt="Photo 1" data-full="assets/photo1.jpg" />
+          <img class="thumb" src="assets/photo2.jpg" alt="Photo 2" data-full="assets/photo2.jpg" />
+          <img class="thumb" src="assets/photo3.jpg" alt="Photo 3" data-full="assets/photo3.jpg" />
+          <img class="thumb" src="assets/photo4.jpg" alt="Photo 4" data-full="assets/photo4.jpg" />
+        </div>
+
+        <h3>Videos</h3>
+        <div class="grid vids-grid">
+          <div class="video-card" data-video="assets/reel1.mp4">
+            <img src="assets/reel1-thumb.jpg" alt="Reel 1" />
+            <div class="video-play">▶</div>
+            <p>Event recap • 60s</p>
+          </div>
+
+          <div class="video-card" data-video="assets/reel2.mp4">
+            <img src="assets/reel2-thumb.jpg" alt="Reel 2" />
+            <div class="video-play">▶</div>
+            <p>Portrait film • 45s</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section alt">
+      <div class="container">
+        <h2>About Mudhoji</h2>
+        <div class="about-inner">
+          <div>
+            <p>With 10+ years shooting and editing, Mudhoji creates images and films that tell real stories. Based in [Your City].</p>
+            <ul>
+              <li>High-end retouching</li>
+              <li>Professional color grading</li>
+              <li>Fast delivery & commercial licensing</li>
+            </ul>
+          </div>
+          <img class="about-photo" src="assets/about.jpg" alt="About photo" />
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="section">
+      <div class="container">
+        <h2>Testimonials</h2>
+        <div class="grid testimonials">
+          <blockquote>
+            “Absolutely amazing — the photos and video exceeded our expectations.” — Client A
+          </blockquote>
+          <blockquote>
+            “Fast, professional and creative. Highly recommended.” — Client B
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section cta">
+      <div class="container">
+        <h2>Let's work together</h2>
+        <p>For bookings and rates, message me directly:</p>
+        <div class="cta-actions">
+          <a class="btn primary" href="mailto:your@email.com?subject=Booking%20Inquiry">Email to Book</a>
+          <a class="btn outline" href="tel:+911234567890">Call / WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© <span id="year"></span> Mudhoji Studio — All rights reserved</small>
+    </div>
+  </footer>
+
+  <!-- Lightbox / video modal -->
+  <div id="mediaModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <button id="modalClose" class="modal-close">✕</button>
+      <img id="modalImage" src="" alt="" style="display:none" />
+      <video id="modalVideo" controls style="display:none; max-width:100%; height:auto;"></video>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
